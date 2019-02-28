@@ -2,6 +2,7 @@
 Unity project example with Machine Learning Agents Toolkit (https://github.com/Unity-Technologies/ml-agents)
 
 These files are the demo of my presentation "Machine Learning and the videogames":
+https://www.slideshare.net/VanessaGalcera/machine-learning-con-unity
 
 
 The zip contains the Unity project with the scenes, scripts, TensorFlow models examples, etc. 
