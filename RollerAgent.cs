@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using MLAgents;
@@ -15,9 +15,9 @@ public class RollerAgent : Agent {
 
     public override void AgentReset() {
         
-        if (this.transform.position.y < -1.0) {
+        if (this.transform.position.y < 0) {
             // The Agent fell
-            this.transform.position = Vector3.zero;
+            this.transform.position = new Vector3(0, 0.5f, 0);
             this.rBody.angularVelocity = Vector3.zero;
             this.rBody.velocity = Vector3.zero;
         }
@@ -30,30 +30,31 @@ public class RollerAgent : Agent {
     }
 
     public override void CollectObservations() {
-        
-        // Calculate relative position
-        Vector3 relativePosition = Target.position - this.transform.position;
 
-        // Relative position
-        AddVectorObs(relativePosition.x / 5);
-        AddVectorObs(relativePosition.z / 5);
-
-        // Distance to edges of platform
-        AddVectorObs((this.transform.position.x + 5) / 5);
-        AddVectorObs((this.transform.position.x - 5) / 5);
-        AddVectorObs((this.transform.position.z + 5) / 5);
-        AddVectorObs((this.transform.position.z - 5) / 5);
+        // Target and Agent positions
+        AddVectorObs(Target.position);
+        AddVectorObs(this.transform.position);
 
         // Agent velocity
-        AddVectorObs(rBody.velocity.x / 5);
-        AddVectorObs(rBody.velocity.z / 5);
+        AddVectorObs(rBody.velocity.x);
+        AddVectorObs(rBody.velocity.z);
 
     }
 
     public float speed = 10;
     private float previousDistance = float.MaxValue;
 
+
     public override void AgentAction(float[] vectorAction, string textAction) {
+
+        previousDistance = Vector3.Distance(this.transform.position,
+                                                  Target.position);
+        // Actions, size = 2
+        // => action[0]: x axis, action[1]: z axis
+        Vector3 controlSignal = Vector3.zero;
+        controlSignal.x = vectorAction[0];
+        controlSignal.z = vectorAction[1];
+        rBody.AddForce(controlSignal * speed);
 
         // Rewards
         float distanceToTarget = Vector3.Distance(this.transform.position,
@@ -67,27 +68,17 @@ public class RollerAgent : Agent {
         }
 
         // Time penalty
-        //AddReward(-0.05f);
+        //AddReward(-0.0005f);
 
         // Fell off platform
-        if (this.transform.position.y < -1.0)
+        if (this.transform.position.y < 0)
         {
             AddReward(-1.0f);
             Done();
         }
 
-        if (distanceToTarget < previousDistance){
-            AddReward(1.0f);
-        }
-
-
-        previousDistance = Vector3.Distance(this.transform.position,
-                                                  Target.position);
-        // Actions, size = 2
-        Vector3 controlSignal = Vector3.zero;
-        controlSignal.x = vectorAction[0];
-        controlSignal.z = vectorAction[1];
-        rBody.AddForce(controlSignal * speed);
-
+        /*if (distanceToTarget < previousDistance){
+            AddReward(0.5f);
+        }*/
     }
 }
